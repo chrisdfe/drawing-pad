@@ -40,8 +40,8 @@ pub fn create_buttons(buttons: &mut Vec<Button>, ui_theme: &UITheme) {
       ui_theme.standard_button_size,
       ui_theme.standard_button_size,
     ),
-    render_background: render_fns::render_rectangular_button,
-    render_foreground: render_fns::render_close_button_foreground,
+    render_background: render_fns::render_rectangular_button_background,
+    render_foreground: render_fns::render_circle_button_foreground,
     on_click: Some(click_handlers::randomize_ui_theme_click_handler),
   });
 
@@ -52,8 +52,8 @@ pub fn create_buttons(buttons: &mut Vec<Button>, ui_theme: &UITheme) {
       ui_theme.standard_button_size,
       ui_theme.standard_button_size,
     ),
-    render_background: render_fns::render_rectangular_button,
-    render_foreground: render_fns::render_close_button_foreground,
+    render_background: render_fns::render_rectangular_button_background,
+    render_foreground: render_fns::render_draw_text_button_foreground,
     on_click: Some(click_handlers::randomize_ui_theme_click_handler),
   });
 }
@@ -64,7 +64,11 @@ pub mod render_fns {
   use crate::buttons::Button;
   use crate::ui_theme::UITheme;
 
-  pub fn render_rectangular_button(button: &Button, is_hovered: bool, ui_theme: &UITheme) {
+  pub fn render_rectangular_button_background(
+    button: &Button,
+    is_hovered: bool,
+    ui_theme: &UITheme,
+  ) {
     let color = if is_hovered {
       ui_theme.interactive_background_primary_hovered
     } else {
@@ -76,7 +80,7 @@ pub mod render_fns {
     draw_rectangle(x, y, w, h, color);
   }
 
-  pub fn render_close_button_foreground(button: &Button, _: bool, ui_theme: &UITheme) {
+  pub fn render_circle_button_foreground(button: &Button, _: bool, ui_theme: &UITheme) {
     let Rect { x, y, w, .. } = button.inner_rect(ui_theme);
 
     let radius = w / 2.;
@@ -90,10 +94,26 @@ pub mod render_fns {
       ui_theme.foreground_primary,
     );
   }
+
+  pub fn render_draw_text_button_foreground(button: &Button, _: bool, ui_theme: &UITheme) {
+    let Rect { x, y, .. } = button.inner_rect(ui_theme);
+
+    let text = &"draw";
+    let font_size = 14;
+    let dimensions = measure_text(text, None, font_size, 2.);
+
+    draw_text(
+      text,
+      button.rect.x,
+      button.rect.y,
+      font_size as f32,
+      ui_theme.foreground_primary,
+    );
+  }
 }
 
 pub mod click_handlers {
-  use crate::buttons::{Button, ButtonClickHandlerContext};
+  use crate::buttons::ButtonClickHandlerContext;
 
   use super::create_buttons;
 
