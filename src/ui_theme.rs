@@ -28,6 +28,7 @@ impl UITheme {
 
   pub fn randomize(&mut self) {
     let r = Self::random();
+
     self.background_primary = r.background_primary;
     self.interactive_background_primary_default = r.interactive_background_primary_default;
     self.interactive_background_primary_hovered = r.interactive_background_primary_hovered;

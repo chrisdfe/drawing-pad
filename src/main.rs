@@ -13,10 +13,11 @@ async fn main() {
 
   let mut ui_theme = UITheme::random();
   let mut hovered_button_idx: i32 = -1;
-  let mut clicked_button_idx: i32 = -1;
+  let mut clicked_button_idx: i32;
+
   let buttons = vec![Button {
-    x: 100.,
-    y: 100.,
+    x: 0.,
+    y: 0.,
     width: 100.,
     height: 100.,
     render_background: render_fns::render_rectangular_button,
@@ -45,31 +46,30 @@ async fn main() {
         }
       }
 
-      if has_updated_hover {
-        if is_mouse_button_pressed(MouseButton::Left) {
-          clicked_button_idx = hovered_button_idx;
-        } else {
-          clicked_button_idx = -1;
-        }
-      } else {
+      if !has_updated_hover {
         hovered_button_idx = -1;
-        clicked_button_idx = -1;
       }
+
+      clicked_button_idx = if hovered_button_idx >= 0 && is_mouse_button_pressed(MouseButton::Left)
+      {
+        hovered_button_idx
+      } else {
+        -1
+      };
     }
 
     // run button event handlers
-    {
-      if clicked_button_idx >= 0 {
-        let clicked_button = &buttons[clicked_button_idx as usize];
 
-        if let Some(on_click) = clicked_button.on_click {
-          (on_click)(
-            &clicked_button,
-            ButtonClickHandlerContext {
-              ui_theme: &mut ui_theme,
-            },
-          )
-        }
+    if clicked_button_idx >= 0 {
+      let clicked_button = &buttons[clicked_button_idx as usize];
+
+      if let Some(on_click) = clicked_button.on_click {
+        (on_click)(
+          &clicked_button,
+          ButtonClickHandlerContext {
+            ui_theme: &mut ui_theme,
+          },
+        )
       }
     }
 

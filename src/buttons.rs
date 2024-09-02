@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use super::ui_theme::UITheme;
+use crate::ui_theme::UITheme;
 
 type ButtonClickHandler = fn(button: &Button, ctx: ButtonClickHandlerContext);
 
@@ -53,13 +53,9 @@ pub mod render_fns {
 }
 
 pub mod click_handlers {
-  use macroquad::prelude::*;
-
   use crate::buttons::{Button, ButtonClickHandlerContext};
-  use crate::ui_theme::UITheme;
 
   pub fn randomize_ui_theme_click_handler(_: &Button, ctx: ButtonClickHandlerContext) {
-    // noop
     let ButtonClickHandlerContext { ui_theme } = ctx;
     ui_theme.randomize();
   }
