@@ -96,19 +96,24 @@ pub mod render_fns {
   }
 
   pub fn render_draw_text_button_foreground(button: &Button, _: bool, ui_theme: &UITheme) {
-    let Rect { x, y, .. } = button.inner_rect(ui_theme);
+    let Rect {
+      x: button_x,
+      y: button_y,
+      w: button_width,
+      h: button_height,
+    } = button.inner_rect(ui_theme);
 
     let text = &"draw";
     let font_size = 14;
-    let dimensions = measure_text(text, None, font_size, 2.);
+    let TextDimensions {
+      width: text_width, ..
+    } = measure_text(text, None, font_size, 2.);
 
-    draw_text(
-      text,
-      button.rect.x,
-      button.rect.y,
-      font_size as f32,
-      ui_theme.foreground_primary,
-    );
+    // Center text in rect
+    let x = button_x + ((button_width - (text_width / 2.)) / 2.);
+    let y = button_y + (button_height / 2.);
+
+    draw_text(text, x, y, font_size as f32, ui_theme.foreground_primary);
   }
 }
 
