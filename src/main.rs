@@ -1,88 +1,10 @@
 use macroquad::prelude::*;
 
-fn random_color() -> Color {
-  Color {
-    r: rand::gen_range(0., 1.),
-    g: rand::gen_range(0., 1.),
-    b: rand::gen_range(0., 1.),
-    a: rand::gen_range(0., 1.),
-  }
-}
+mod buttons;
+use buttons::*;
 
-struct UITheme {
-  background_primary: Color,
-  interactive_background_primary_default: Color,
-  interactive_background_primary_hovered: Color,
-  foreground_primary: Color,
-}
-
-impl UITheme {
-  fn random() -> Self {
-    Self {
-      background_primary: random_color(),
-      interactive_background_primary_default: random_color(),
-      interactive_background_primary_hovered: random_color(),
-      foreground_primary: random_color(),
-    }
-  }
-
-  pub fn randomize(&mut self) {
-    let r = Self::random();
-    self.background_primary = r.background_primary;
-    self.interactive_background_primary_default = r.interactive_background_primary_default;
-    self.interactive_background_primary_hovered = r.interactive_background_primary_hovered;
-    self.foreground_primary = r.foreground_primary;
-  }
-}
-
-type ButtonRenderFn = fn(btn: &Button, is_hovered: bool, theme: &UITheme) -> ();
-
-struct ButtonClickHandlerContext<'a> {
-  ui_theme: &'a mut UITheme,
-}
-
-type ButtonClickHandler = fn(button: &Button, ctx: ButtonClickHandlerContext);
-
-struct Button {
-  pub x: f32,
-  pub y: f32,
-  pub width: f32,
-  pub height: f32,
-  pub render_background: ButtonRenderFn,
-  pub render_foreground: ButtonRenderFn,
-  pub on_click: Option<ButtonClickHandler>,
-}
-
-fn render_rectangular_button(button: &Button, is_hovered: bool, ui_theme: &UITheme) {
-  let color = if is_hovered {
-    ui_theme.interactive_background_primary_hovered
-  } else {
-    ui_theme.interactive_background_primary_default
-  };
-
-  //
-  draw_rectangle(button.x, button.y, button.width, button.height, color);
-}
-
-fn render_close_button_foreground(button: &Button, _: bool, ui_theme: &UITheme) {
-  const PADDING: f32 = 10.;
-
-  let width = button.width - (PADDING * 2.);
-  let height = button.height - (PADDING * 2.);
-
-  let x = button.x + (width / 2.) + PADDING;
-  let y = button.y + (height / 2.) + PADDING;
-
-  let radius = (button.width - (PADDING * 2.)) / 2.;
-
-  draw_circle(x, y, radius, ui_theme.foreground_primary);
-}
-
-fn randomize_ui_theme_click_handler(_: &Button, ctx: ButtonClickHandlerContext) {
-  // noop
-  let ButtonClickHandlerContext { ui_theme } = ctx;
-  ui_theme.randomize();
-}
+mod ui_theme;
+use ui_theme::UITheme;
 
 #[macroquad::main("DrawingPad")]
 async fn main() {
@@ -97,9 +19,9 @@ async fn main() {
     y: 100.,
     width: 100.,
     height: 100.,
-    render_background: render_rectangular_button,
-    render_foreground: render_close_button_foreground,
-    on_click: Some(randomize_ui_theme_click_handler),
+    render_background: render_fns::render_rectangular_button,
+    render_foreground: render_fns::render_close_button_foreground,
+    on_click: Some(click_handlers::randomize_ui_theme_click_handler),
   }];
 
   loop {
