@@ -2,12 +2,13 @@ use macroquad::prelude::*;
 
 use crate::ui_theme::UITheme;
 
-type ButtonClickHandler = fn(button: &Button, ctx: ButtonClickHandlerContext);
+type ButtonClickHandler = fn(ctx: ButtonClickHandlerContext);
 
-type ButtonRenderFn = fn(btn: &Button, is_hovered: bool, theme: &UITheme) -> ();
+type ButtonRenderFn = fn(button: &Button, is_hovered: bool, theme: &UITheme) -> ();
 
 pub struct ButtonClickHandlerContext<'a> {
   pub ui_theme: &'a mut UITheme,
+  pub buttons: &'a mut Vec<Button>,
 }
 
 pub struct Button {
@@ -27,6 +28,34 @@ impl Button {
 
     Rect::new(x, y, width, height)
   }
+}
+
+pub fn create_buttons(buttons: &mut Vec<Button>, ui_theme: &UITheme) {
+  buttons.clear();
+
+  buttons.push(Button {
+    rect: Rect::new(
+      ui_theme.screen_padding,
+      ui_theme.screen_padding,
+      ui_theme.standard_button_size,
+      ui_theme.standard_button_size,
+    ),
+    render_background: render_fns::render_rectangular_button,
+    render_foreground: render_fns::render_close_button_foreground,
+    on_click: Some(click_handlers::randomize_ui_theme_click_handler),
+  });
+
+  buttons.push(Button {
+    rect: Rect::new(
+      ui_theme.screen_padding,
+      ui_theme.screen_padding + ui_theme.standard_button_size + ui_theme.element_margin,
+      ui_theme.standard_button_size,
+      ui_theme.standard_button_size,
+    ),
+    render_background: render_fns::render_rectangular_button,
+    render_foreground: render_fns::render_close_button_foreground,
+    on_click: Some(click_handlers::randomize_ui_theme_click_handler),
+  });
 }
 
 pub mod render_fns {
@@ -66,8 +95,11 @@ pub mod render_fns {
 pub mod click_handlers {
   use crate::buttons::{Button, ButtonClickHandlerContext};
 
-  pub fn randomize_ui_theme_click_handler(_: &Button, ctx: ButtonClickHandlerContext) {
-    let ButtonClickHandlerContext { ui_theme } = ctx;
+  use super::create_buttons;
+
+  pub fn randomize_ui_theme_click_handler(ctx: ButtonClickHandlerContext) {
+    let ButtonClickHandlerContext { ui_theme, buttons } = ctx;
     ui_theme.randomize();
+    create_buttons(buttons, ui_theme);
   }
 }

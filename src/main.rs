@@ -15,17 +15,13 @@ async fn main() {
   let mut hovered_button_idx: i32 = -1;
   let mut clicked_button_idx: i32;
 
-  let buttons = vec![Button {
-    rect: Rect::new(0., 0., 100., 100.),
-    render_background: render_fns::render_rectangular_button,
-    render_foreground: render_fns::render_close_button_foreground,
-    on_click: Some(click_handlers::randomize_ui_theme_click_handler),
-  }];
+  let mut buttons: Vec<Button> = Vec::new();
+  create_buttons(&mut buttons, &ui_theme);
 
   loop {
-    if is_key_pressed(KeyCode::R) {
-      ui_theme = UITheme::random()
-    }
+    // if is_key_pressed(KeyCode::R) {
+    //   ui_theme = UITheme::random()
+    // }
 
     // mouseover/mouseout
     {
@@ -59,12 +55,10 @@ async fn main() {
       let clicked_button = &buttons[clicked_button_idx as usize];
 
       if let Some(on_click) = clicked_button.on_click {
-        (on_click)(
-          &clicked_button,
-          ButtonClickHandlerContext {
-            ui_theme: &mut ui_theme,
-          },
-        )
+        (on_click)(ButtonClickHandlerContext {
+          buttons: &mut buttons,
+          ui_theme: &mut ui_theme,
+        })
       }
     }
 
