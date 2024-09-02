@@ -16,10 +16,7 @@ async fn main() {
   let mut clicked_button_idx: i32;
 
   let buttons = vec![Button {
-    x: 0.,
-    y: 0.,
-    width: 100.,
-    height: 100.,
+    rect: Rect::new(0., 0., 100., 100.),
     render_background: render_fns::render_rectangular_button,
     render_foreground: render_fns::render_close_button_foreground,
     on_click: Some(click_handlers::randomize_ui_theme_click_handler),
@@ -33,13 +30,11 @@ async fn main() {
     // mouseover/mouseout
     {
       let (mouse_x, mouse_y) = mouse_position();
+      let mouse_position_vec = Vec2::new(mouse_x, mouse_y);
+
       let mut has_updated_hover: bool = false;
       for (idx, button) in buttons.iter().enumerate() {
-        if mouse_x > button.x
-          && mouse_x < button.x + button.width
-          && mouse_y > button.y
-          && mouse_y < button.y + button.height
-        {
+        if button.rect.contains(mouse_position_vec) {
           hovered_button_idx = idx as i32;
           has_updated_hover = true;
           break;
