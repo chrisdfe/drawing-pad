@@ -18,35 +18,54 @@ async fn main() {
   let mut buttons: Vec<Button> = Vec::new();
   create_buttons(&mut buttons, &ui_theme);
 
+  let canvas_rect = Rect::new(500., 200., 200., 200.);
+  let mut canvas_image = Image::gen_image_color(canvas_rect.w as u16, canvas_rect.h as u16, WHITE);
+  let canvas_texture = Texture2D::from_image(&canvas_image);
+
+  let brush_size: u16 = 2;
+
   loop {
     // if is_key_pressed(KeyCode::R) {
     //   ui_theme = UITheme::random()
     // }
 
     // mouseover/mouseout
-    {
-      let (mouse_x, mouse_y) = mouse_position();
-      let mouse_position_vec = Vec2::new(mouse_x, mouse_y);
 
-      let mut has_updated_hover: bool = false;
-      for (idx, button) in buttons.iter().enumerate() {
-        if button.rect.contains(mouse_position_vec) {
-          hovered_button_idx = idx as i32;
-          has_updated_hover = true;
-          break;
-        }
+    let (mouse_x, mouse_y) = mouse_position();
+    let mouse_position_vec = Vec2::new(mouse_x, mouse_y);
+
+    let mut has_updated_hover: bool = false;
+    for (idx, button) in buttons.iter().enumerate() {
+      if button.rect.contains(mouse_position_vec) {
+        hovered_button_idx = idx as i32;
+        has_updated_hover = true;
+        break;
       }
+    }
 
-      if !has_updated_hover {
-        hovered_button_idx = -1;
-      }
+    if !has_updated_hover {
+      hovered_button_idx = -1;
+    }
 
-      clicked_button_idx = if hovered_button_idx >= 0 && is_mouse_button_pressed(MouseButton::Left)
-      {
-        hovered_button_idx
-      } else {
-        -1
-      };
+    clicked_button_idx = if hovered_button_idx >= 0 && is_mouse_button_pressed(MouseButton::Left) {
+      hovered_button_idx
+    } else {
+      -1
+    };
+
+    // drawing
+    if is_mouse_button_down(MouseButton::Left) && canvas_rect.contains(mouse_position_vec) {
+      let mouse_position_with_offset = Vec2::new(
+        mouse_position_vec.x - canvas_rect.x,
+        mouse_position_vec.y - canvas_rect.y,
+      );
+
+      canvas_image.set_pixel(
+        mouse_position_with_offset.x as u32,
+        mouse_position_with_offset.y as u32,
+        RED,
+      );
+      canvas_texture.update(&canvas_image);
     }
 
     // run button event handlers
@@ -70,6 +89,8 @@ async fn main() {
       (button.render_background)(button, is_hovered, &ui_theme);
       (button.render_foreground)(button, is_hovered, &ui_theme);
     }
+
+    draw_texture(&canvas_texture, canvas_rect.x, canvas_rect.y, WHITE);
 
     next_frame().await
   }
