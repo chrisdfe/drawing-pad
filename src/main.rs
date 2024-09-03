@@ -22,7 +22,8 @@ async fn main() {
   let mut canvas_image = Image::gen_image_color(canvas_rect.w as u16, canvas_rect.h as u16, WHITE);
   let canvas_texture = Texture2D::from_image(&canvas_image);
 
-  let brush_size: u16 = 2;
+  let brush_size: u16 = 5;
+  let brush_color = RED;
 
   loop {
     // if is_key_pressed(KeyCode::R) {
@@ -60,11 +61,24 @@ async fn main() {
         mouse_position_vec.y - canvas_rect.y,
       );
 
-      canvas_image.set_pixel(
-        mouse_position_with_offset.x as u32,
-        mouse_position_with_offset.y as u32,
-        RED,
-      );
+      let mut brush_pixel_buffer: Vec<(u32, u32)> = Vec::new();
+      for x in mouse_position_with_offset.x as i16 - (brush_size as i16)
+        ..mouse_position_with_offset.x as i16 + (brush_size as i16)
+      {
+        for y in mouse_position_with_offset.y as i16 - (brush_size as i16)
+          ..mouse_position_with_offset.y as i16 + (brush_size as i16)
+        {
+          // prevent overflow
+          if x >= 0 && y >= 0 {
+            brush_pixel_buffer.push((x as u32, y as u32))
+          }
+        }
+      }
+
+      for (x, y) in brush_pixel_buffer {
+        canvas_image.set_pixel(x, y, brush_color);
+      }
+
       canvas_texture.update(&canvas_image);
     }
 
