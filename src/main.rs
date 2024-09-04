@@ -6,6 +6,9 @@ use buttons::*;
 mod ui_theme;
 use ui_theme::UITheme;
 
+mod tools;
+use tools::*;
+
 #[macroquad::main("DrawingPad")]
 async fn main() {
   // Seed rng
@@ -15,10 +18,34 @@ async fn main() {
   let mut hovered_button_idx: i32 = -1;
   let mut clicked_button_idx: i32;
 
-  let mut buttons: Vec<Button> = Vec::new();
-  create_buttons(&mut buttons, &ui_theme);
+  let mut tools = Tools::new();
 
-  let canvas_rect = Rect::new(500., 200., 200., 200.);
+  let mut buttons: Vec<Button> = Vec::new();
+  create_buttons(
+    &mut buttons,
+    CreateButtonsContext {
+      ui_theme: &ui_theme,
+      tools: &tools,
+    },
+  );
+
+  // TODO - refresh this + canvas image when UI theme updates?
+  let canvas_rect = {
+    let UITheme {
+      screen_padding,
+      tools_panel_width,
+      ..
+    } = ui_theme;
+
+    let x = screen_padding + tools_panel_width;
+    let y = screen_padding;
+
+    let width = screen_width() - ((screen_padding * 2.) + tools_panel_width);
+    let height = screen_height() - (screen_padding * 2.);
+
+    Rect::new(x, y, width, height)
+  };
+
   let mut canvas_image = Image::gen_image_color(canvas_rect.w as u16, canvas_rect.h as u16, WHITE);
   let canvas_texture = Texture2D::from_image(&canvas_image);
 
@@ -26,12 +53,7 @@ async fn main() {
   let brush_color = RED;
 
   loop {
-    // if is_key_pressed(KeyCode::R) {
-    //   ui_theme = UITheme::random()
-    // }
-
-    // mouseover/mouseout
-
+    // listen for mouse events
     let (mouse_x, mouse_y) = mouse_position();
     let mouse_position_vec = Vec2::new(mouse_x, mouse_y);
 
@@ -91,6 +113,7 @@ async fn main() {
         (on_click)(ButtonClickHandlerContext {
           buttons: &mut buttons,
           ui_theme: &mut ui_theme,
+          tools: &mut tools,
         })
       }
     }

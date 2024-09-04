@@ -1,6 +1,7 @@
 use macroquad::prelude::*;
 
-use crate::ui_theme::UITheme;
+use crate::tools::*;
+use crate::ui_theme::*;
 
 type ButtonClickHandler = fn(ctx: ButtonClickHandlerContext);
 
@@ -9,6 +10,7 @@ type ButtonRenderFn = fn(button: &Button, is_hovered: bool, theme: &UITheme) -> 
 pub struct ButtonClickHandlerContext<'a> {
   pub ui_theme: &'a mut UITheme,
   pub buttons: &'a mut Vec<Button>,
+  pub tools: &'a mut Tools,
 }
 
 pub struct Button {
@@ -30,32 +32,57 @@ impl Button {
   }
 }
 
-pub fn create_buttons(buttons: &mut Vec<Button>, ui_theme: &UITheme) {
+pub struct CreateButtonsContext<'a> {
+  pub ui_theme: &'a UITheme,
+  pub tools: &'a Tools,
+}
+
+pub fn create_buttons(buttons: &mut Vec<Button>, ctx: CreateButtonsContext) {
+  let CreateButtonsContext { ui_theme, tools } = ctx;
+
   buttons.clear();
 
-  buttons.push(Button {
-    rect: Rect::new(
-      ui_theme.screen_padding,
-      ui_theme.screen_padding,
-      ui_theme.standard_button_size,
-      ui_theme.standard_button_size,
-    ),
-    render_background: render_fns::render_rectangular_button_background,
-    render_foreground: render_fns::render_circle_button_foreground,
-    on_click: Some(click_handlers::randomize_ui_theme_click_handler),
-  });
+  let button_size = ui_theme.get_tool_panel_button_size();
 
-  buttons.push(Button {
-    rect: Rect::new(
-      ui_theme.screen_padding,
-      ui_theme.screen_padding + ui_theme.standard_button_size + ui_theme.element_margin,
-      ui_theme.standard_button_size,
-      ui_theme.standard_button_size,
-    ),
-    render_background: render_fns::render_rectangular_button_background,
-    render_foreground: render_fns::render_draw_text_button_foreground,
-    on_click: Some(click_handlers::randomize_ui_theme_click_handler),
-  });
+  for (i, _tool) in tools.tools.iter().enumerate() {
+    buttons.push(Button {
+      rect: Rect::new(
+        // x
+        ui_theme.panel_padding,
+        // y
+        ui_theme.panel_padding + ((button_size + ui_theme.element_margin) * (i as f32)),
+        button_size,
+        button_size,
+      ),
+      render_background: render_fns::render_rectangular_button_background,
+      render_foreground: render_fns::render_circle_button_foreground,
+      on_click: Some(click_handlers::randomize_ui_theme_click_handler),
+    });
+  }
+
+  // buttons.push(Button {
+  //   rect: Rect::new(
+  //     ui_theme.screen_padding,
+  //     ui_theme.screen_padding,
+  //     ui_theme.standard_button_size,
+  //     ui_theme.standard_button_size,
+  //   ),
+  //   render_background: render_fns::render_rectangular_button_background,
+  //   render_foreground: render_fns::render_circle_button_foreground,
+  //   on_click: Some(click_handlers::randomize_ui_theme_click_handler),
+  // });
+
+  // buttons.push(Button {
+  //   rect: Rect::new(
+  //     ui_theme.screen_padding,
+  //     ui_theme.screen_padding + ui_theme.standard_button_size + ui_theme.element_margin,
+  //     ui_theme.standard_button_size,
+  //     ui_theme.standard_button_size,
+  //   ),
+  //   render_background: render_fns::render_rectangular_button_background,
+  //   render_foreground: render_fns::render_draw_text_button_foreground,
+  //   on_click: Some(click_handlers::randomize_ui_theme_click_handler),
+  // });
 }
 
 pub mod render_fns {
@@ -123,8 +150,12 @@ pub mod click_handlers {
   use super::create_buttons;
 
   pub fn randomize_ui_theme_click_handler(ctx: ButtonClickHandlerContext) {
-    let ButtonClickHandlerContext { ui_theme, buttons } = ctx;
+    let ButtonClickHandlerContext {
+      ui_theme,
+      buttons,
+      tools,
+    } = ctx;
     ui_theme.randomize();
-    create_buttons(buttons, ui_theme);
+    create_buttons(buttons, super::CreateButtonsContext { ui_theme, tools })
   }
 }
